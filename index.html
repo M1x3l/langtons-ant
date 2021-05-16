@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      canvas {
+        border: solid 3px #000;
+        image-rendering: pixelated;
+        width: 100%;
+      }
+    </style>
+    <script src="../../../jquery/3-5-1/jquery.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        const canvas = document.childNodes.item(1).lastChild.firstChild
+          .nextSibling;
+        const context = canvas.getContext("2d");
+        const width = canvas.width,
+          height = canvas.height;
+        let imagedata = context.createImageData(width, height);
+
+        const directions = {
+          UP: 0,
+          RIGHT: 1,
+          DOWN: 2,
+          LEFT: 3,
+          CCW: -1,
+          CW: 1,
+        };
+
+        let ant = {
+          pos: {
+            x: Math.floor(width >> 1),
+            y: Math.floor(height >> 1),
+          },
+          facing: directions.UP,
+        };
+
+        // color = {
+        //     r : number,
+        //     g : number,
+        //     b : number,
+        //     a : number
+        // }
+
+        const turn = (direction) => {
+          const facing = ant.facing;
+          let newFacing = facing + direction;
+          if (newFacing == 4) newFacing = 0;
+          else if (newFacing == -1) newFacing = 3;
+
+          ant.facing = newFacing;
+        };
+        const move = () => {
+          switch (ant.facing) {
+            case directions.UP:
+              ant.pos.y += 1;
+              break;
+            case directions.RIGHT:
+              ant.pos.x += 1;
+              break;
+            case directions.DOWN:
+              ant.pos.y -= 1;
+              break;
+            case directions.LEFT:
+              ant.pos.x -= 1;
+              break;
+            default:
+              break;
+          }
+        };
+        /**
+         * @param {number} x
+         * @param {number} y
+         * @param {{
+         * r : number,
+         * g : number,
+         * b : number,
+         * a : number
+         * }} color
+         */
+        const setColor = (x, y, color) => {
+          const index = (y * width + x) * 4;
+          imagedata.data[index] = color.r;
+          imagedata.data[index + 1] = color.g;
+          imagedata.data[index + 2] = color.b;
+          imagedata.data[index + 3] = color.a;
+        };
+        /**
+         * @param {number} x
+         * @param {number} y
+         * @returns {{
+         * r : number,
+         * g : number,
+         * b : number,
+         * a : number
+         * }}
+         */
+        const getColor = (x, y) => {
+          const index = (y * width + x) * 4;
+          return {
+            r: imagedata.data[index],
+            g: imagedata.data[index + 1],
+            b: imagedata.data[index + 2],
+            a: imagedata.data[index + 3],
+          };
+        };
+
+        function colorManager(x, y, targetColorArray, turnDirection) {
+          turn(eval(`directions.${turnDirection}`));
+          setColor(x, y, {
+            r: targetColorArray[0],
+            g: targetColorArray[1],
+            b: targetColorArray[2],
+            a: targetColorArray[3],
+          });
+          move();
+        }
+
+        function antHandler() {
+          for (let x = 0; x < width; x++) {
+            for (let y = 0; y < width; y++) {
+              if (x == ant.pos.x % width && y == ant.pos.y % height) {
+                const currentColor = getColor(x, y);
+                const colorString = `${currentColor.r}-${currentColor.g}-${currentColor.b}`;
+                switch (colorString) {
+                  case "255-255-255":
+                    colorManager(x, y, [0, 0, 0, 255], "CW");
+                    break;
+                  case "0-0-0":
+                    colorManager(x, y, [255, 255, 255, 255], "CCW");
+                    // colorManager(x,y,[255,0,0,255],'CW')
+                    break;
+                  // case '255-0-0':
+                  //     colorManager(x,y,[0,255,0,255],'CCW')
+                  //     break
+                  // case '0-255-0':
+                  //     colorManager(x,y,[0,0,255,255],'CCW')
+                  //     break
+                  // case '0-0-255':
+                  //     colorManager(x,y,[255,255,0,255],'CCW')
+                  //     break
+                  // case '255-255-0':
+                  //     colorManager(x,y,[255,0,255,255],'CW')
+                  //     break
+                  // case '255-255-0':
+                  //     colorManager(x,y,[255,0,255,255],'CCW')
+                  //     break
+                  // case '255-0-255':
+                  //     colorManager(x,y,[0,255,255,255],'CCW')
+                  //     break
+                  // case '0-255-255':
+                  //     colorManager(x,y,[128,0,0,255],'CCW')
+                  //     break
+                  // case '128-0-0':
+                  //     colorManager(x,y,[0,128,0,255],'CW')
+                  //     break
+                  // case '0-128-0':
+                  //     colorManager(x,y,[0,0,128,255],'CW')
+                  //     break
+                  default:
+                    colorManager(x, y, [255, 255, 255, 255], "CW");
+                    break;
+                }
+
+                context.putImageData(imagedata, 0, 0);
+                return;
+              }
+            }
+          }
+        }
+
+        console.log(setInterval(antHandler, 1));
+      });
+    </script>
+  </head>
+  <body>
+    <canvas id="canvas" width="256" height="256"> </canvas>
+  </body>
+</html>
