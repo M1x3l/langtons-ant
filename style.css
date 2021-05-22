@@ -1,0 +1,13 @@
+canvas {
+  border: solid 3px #000;
+  image-rendering: pixelated;
+  height: 90vh;
+}
+
+input[type="range"] {
+  width: 30em;
+}
+
+.wrapper {
+  display: flex;
+}
